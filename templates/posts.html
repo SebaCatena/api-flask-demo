@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <title>Posts desde API</title>
+  </head>
+  <body>
+    <h1>Posts obtenidos desde una API externa</h1>
+    <ul>
+      {% for post in posts %}
+        <li><strong>{{ post.title }}</strong><br>{{ post.body }}</li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>
