@@ -6,10 +6,17 @@
   </head>
   <body>
     <h1>Posts obtenidos desde una API externa</h1>
+    <form method="GET" action="{{ url_for('home') }}">
+      <input type="text" name="search" placeholder="Buscar por título" value="{{ search }}">
+      <button type="submit">Buscar</button>
+    </form>
     <ul>
-      {% for post in posts %}
-        <li><strong>{{ post.title }}</strong><br>{{ post.body }}</li>
-      {% endfor %}
-    </ul>
+ {% for post in posts %}
+    <li>
+      <a href="{{ url_for('post_detail', post_id=post.id) }}"><strong>{{ post.title }}</strong></a><br>
+      {{ post.body }}
+    </li>
+  {% endfor %}
+</ul>
   </body>
 </html>
