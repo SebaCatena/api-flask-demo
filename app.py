@@ -1,27 +1,52 @@
-from flask import Flask, render_template, request, abort
+import os
+
 import requests
+from flask import Flask, abort, render_template, request
 
 app = Flask(__name__)
 
-@app.route('/')
+API_URL = "https://jsonplaceholder.typicode.com"
+TIMEOUT = 5  # segundos
+
+
+@app.route("/")
 def home():
-    search = request.args.get('search', '')  # Captura texto del input de búsqueda
-    response = requests.get('https://jsonplaceholder.typicode.com/posts')
-    posts = response.json()
+    search = request.args.get("search", "").strip()[:100]
+    error = None
+    posts = []
+
+    try:
+        response = requests.get(f"{API_URL}/posts", timeout=TIMEOUT)
+        response.raise_for_status()
+        posts = response.json()
+    except requests.RequestException:
+        error = "No pudimos obtener las publicaciones. Intentá de nuevo en unos segundos."
 
     if search:
-        # Filtra posts que contienen la palabra buscada (sin importar mayúsculas/minúsculas)
-        posts = [post for post in posts if search.lower() in post['title'].lower()]
+        posts = [post for post in posts if search.lower() in post.get("title", "").lower()]
 
-    return render_template('posts.html', posts=posts[:5], search=search)
+    return render_template("posts.html", posts=posts[:5], search=search, error=error)
 
-@app.route('/post/<int:post_id>')
+
+@app.route("/post/<int:post_id>")
 def post_detail(post_id):
-    response = requests.get(f'https://jsonplaceholder.typicode.com/posts/{post_id}')
+    try:
+        response = requests.get(f"{API_URL}/posts/{post_id}", timeout=TIMEOUT)
+    except requests.RequestException:
+        abort(503)
+
     if response.status_code == 404:
         abort(404)
-    post = response.json()
-    return render_template('post_detail.html', post=post)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+    try:
+        response.raise_for_status()
+    except requests.HTTPError:
+        abort(502)
+
+    return render_template("post_detail.html", post=response.json())
+
+
+if __name__ == "__main__":
+    # El modo debug se habilita solo de forma explícita: FLASK_DEBUG=1.
+    # Nunca lo actives en producción: el depurador de Werkzeug permite ejecutar código.
+    app.run(debug=os.getenv("FLASK_DEBUG") == "1")
