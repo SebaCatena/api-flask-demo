@@ -1,22 +1,45 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8">
-    <title>Posts desde API</title>
-  </head>
-  <body>
-    <h1>Posts obtenidos desde una API externa</h1>
-    <form method="GET" action="{{ url_for('home') }}">
-      <input type="text" name="search" placeholder="Buscar por título" value="{{ search }}">
-      <button type="submit">Buscar</button>
-    </form>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Posts desde una API</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; }
+    form { display: flex; gap: .5rem; margin: 1.5rem 0; }
+    input { flex: 1; padding: .5rem; }
+    button { padding: .5rem 1rem; cursor: pointer; }
+    li { margin-bottom: 1rem; }
+    .error { padding: .75rem 1rem; border: 1px solid #c00; border-radius: 6px; }
+    .empty { opacity: .7; }
+  </style>
+</head>
+<body>
+  <h1>Posts obtenidos desde una API externa</h1>
+
+  {% if error %}
+    <p class="error" role="alert">{{ error }}</p>
+  {% endif %}
+
+  <form method="get" action="{{ url_for('home') }}">
+    <label for="search" hidden>Buscar por título</label>
+    <input id="search" type="search" name="search" maxlength="100"
+           placeholder="Buscar por título" value="{{ search }}" autocomplete="off">
+    <button type="submit">Buscar</button>
+  </form>
+
+  {% if posts %}
     <ul>
- {% for post in posts %}
-    <li>
-      <a href="{{ url_for('post_detail', post_id=post.id) }}"><strong>{{ post.title }}</strong></a><br>
-      {{ post.body }}
-    </li>
-  {% endfor %}
-</ul>
-  </body>
+      {% for post in posts %}
+        <li>
+          <a href="{{ url_for('post_detail', post_id=post.id) }}"><strong>{{ post.title }}</strong></a><br>
+          {{ post.body }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% elif not error %}
+    <p class="empty">No se encontraron publicaciones para “{{ search }}”.</p>
+  {% endif %}
+</body>
 </html>
